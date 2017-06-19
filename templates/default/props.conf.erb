@@ -1,0 +1,7 @@
+<% @props.each_pair do |name, config| -%>
+[<%= name %>]
+<% config.each_pair do |key, value| -%>
+<%= key %> = <%= value %>
+<% end -%>
+
+<% end -%>

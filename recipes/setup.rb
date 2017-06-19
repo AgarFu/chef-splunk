@@ -56,6 +56,14 @@ directory base_config_dir do
   group node['splunk']['user']['username']
 end
 
+template "#{base_config_dir}/props.conf" do
+  source 'props.conf.erb'
+  mode 0644
+  variables props: node['splunk']['props_conf']
+  notifies :restart, 'service[splunk]'
+  not_if { node['splunk']['props_conf'].nil? }
+end
+
 template "#{base_config_dir}/outputs.conf" do
   source 'outputs.conf.erb'
   mode 0644

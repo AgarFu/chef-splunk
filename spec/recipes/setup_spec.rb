@@ -89,5 +89,30 @@ describe 'chef-splunk::setup' do
     it 'includes service and setup_auth recipes' do
       expect(chef_run).to_not include_recipe('chef-splunk::setup_auth')
     end
+
+    it 'do not genertes props.conf' do
+      expect(chef_run).to_not create_template('/opt/splunkforwarder/etc/system/local/props.conf')
+    end
+  end
+
+  context 'Configure props' do
+    let(:chef_run) do
+      ChefSpec::ServerRunner.new do |node|
+        node.set['splunk']['setup_auth'] = false
+        node.set['splunk']['props_conf'] = {
+          'log4j' => {
+            'TRUNCATE' => 10000
+          }
+        }
+        allow_any_instance_of(Chef::Recipe).to receive(:include_recipe).with('chef-splunk::service').and_return(true)
+      end.converge(described_recipe)
+    end
+
+    it 'Generates props.conf' do
+      expect(chef_run).to create_template('/opt/splunkforwarder/etc/system/local/props.conf')
+      expect(chef_run).to render_file('/opt/splunkforwarder/etc/system/local/props.conf')
+        .with_content(/^\[log4j\]$/)
+        .with_content(/^TRUNCATE = 10000$/)
+    end
   end
 end
